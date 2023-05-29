@@ -36,10 +36,12 @@
   <div class="container mt-5" id="Map">
     <GoogleMap :api-key="this.$API_KEY" style="width: 100%; height: 700px" :center="center" :zoom="13">
       <MarkerCluster>
-        <Marker v-for="(location, i) in locations" :options="{ position: location }" :key="i" />
+        <Marker v-for="(location, i) in locations" :options="{ position: location.location }" :key="i" />
       </MarkerCluster>
     </GoogleMap>
   </div>
+
+  <!-- Location Table -->
 </template>
 
 <script>
@@ -58,7 +60,13 @@ export default {
       timeZone: '',
       timeDate: '',
       spinner: false,
+      // For Table
     };
+  },
+  computed: {
+    rows() {
+      return this.items.length;
+    },
   },
   methods: {
     currentLocation() {
@@ -74,13 +82,15 @@ export default {
             };
 
             // If Search Location not exist, then push into Locations
-            if (!this.locations.some((e) => e.lat == this.center.lat && e.lng == this.center.lng)) {
-              //   console.log(this.center.lat + ' ' + this.center.lng);
-              this.locations.push(this.center);
+            if (!this.locations.some((e) => e.address == 'Current Location')) {
+              //console.log('Current Location ' + this.center.lat + ' ' + this.center.lng);
+              this.locations.push({ address: 'Current Location', location: this.center });
+              console.log(JSON.stringify(this.locations));
             }
             this.spinner = false;
             this.getTimeZone();
           },
+          // User Denied Geolocation
           (error) => {
             this.errorMsg = 'Error: ' + error.message;
             this.spinner = false;
@@ -110,11 +120,12 @@ export default {
         if (res.data.status == 'OK') {
           this.center = res.data.results[0].geometry.location;
           // If Search Location not exist, then push into Locations
-          if (!this.locations.some((e) => e.lat == this.center.lat && e.lng == this.center.lng)) {
-            // console.log(this.center.lat + ' ' + this.center.lng);
-            this.locations.push(this.center);
+          if (!this.locations.some((e) => e.address == this.searchInput)) {
+            console.log(this.searchInput + ' ' + this.center.lat + ' ' + this.center.lng);
+            this.locations.push({ address: this.searchInput, location: this.center });
           }
           this.getTimeZone();
+          console.log(JSON.stringify(this.locations));
         } else {
           //   console.log('Location not found.');
           this.errorMsg = 'Location not found';
