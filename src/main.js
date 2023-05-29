@@ -1,4 +1,9 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
 
-createApp(App).mount('#app')
+const app = createApp(App);
+
+// Declare global constant variable
+app.config.globalProperties.$API_KEY = 'AIzaSyBFZrk5aieMegr03_QvN7E1iMXDYkuSSM4';
+
+app.mount('#app');

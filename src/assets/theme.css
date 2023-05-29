@@ -1,0 +1,49 @@
+body {
+  background: #eee;
+}
+
+#Form {
+  background-color: #ffffff;
+  margin: 0px auto;
+  font-family: Raleway;
+  padding: 40px;
+  border-radius: 10px;
+}
+
+#Search-icon {
+  background-color: gray;
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  padding: 10px 10px;
+  margin-left: -5px;
+  font-size: 17px;
+  font-family: Raleway;
+  cursor: pointer;
+}
+#Search-button {
+  background-color: gray;
+  color: #ffffff;
+  border: none;
+  border-radius: 10%;
+  padding: 10px 20px;
+  font-size: 17px;
+  font-family: Raleway;
+  cursor: pointer;
+}
+
+#Map {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+button:focus {
+  outline: none !important;
+}
