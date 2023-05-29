@@ -40,6 +40,14 @@ body {
   bottom: 0;
 }
 
+#Table {
+  margin: auto;
+  padding-top: 600px;
+  max-width: 1000px;
+  position: relative;
+  z-index: 1;
+}
+
 button:hover {
   opacity: 0.8;
 }

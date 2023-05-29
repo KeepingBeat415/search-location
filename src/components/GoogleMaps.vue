@@ -12,7 +12,7 @@
                 <input type="text" class="form-control" v-model="searchInput" @keyup.enter.prevent="searchLocation()" />
               </div>
               <div class="col" style="padding-top: 5px">
-                <span id="Search-icon" @click.prevent="currentLocation()">
+                <span id="Search-icon" @click="currentLocation">
                   <i class="fa fa-home"></i>
                 </span>
               </div>
@@ -32,6 +32,7 @@
       </div>
     </div>
   </div>
+
   <!-- GoogleMap -->
   <div class="container mt-5" id="Map">
     <GoogleMap :api-key="this.$API_KEY" style="width: 100%; height: 700px" :center="center" :zoom="13">
@@ -42,10 +43,52 @@
   </div>
 
   <!-- Location Table -->
+
+  <!-- <div class="container mt-5" style="padding-top: 550px" v-show="locations.length > 0"> -->
+  <div id="Table" v-show="locations.length > 0">
+    <div class="row d-flex justify-content-center align-items-center">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th cope="col"></th>
+            <th cope="col">Location</th>
+            <th cope="col">Latitude</th>
+            <th cope="col">Longitude</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="ele in displayLocation" :key="ele.address">
+            <td>
+              <input type="checkbox" v-model="selectedLocations" :value="ele.address" />
+            </td>
+            <td>{{ ele.address }}</td>
+            <td>{{ ele.location.lat }}</td>
+            <td>{{ ele.location.lng }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="container">
+        <div class="row">
+          <div class="col-sm">
+            <button type="button" class="btn btn-danger" @click="deletedSelectedLocations">Delete</button>
+          </div>
+          <div class="col-sm"></div>
+          <div class="col-sm" style="padding-left: 100px">
+            <button type="button" class="btn btn-light" @click="prevPage" :disabled="currentPage == 1">Previous</button>
+            <span style="padding: 0 5px">{{ currentPage }} / {{ lastPage }}</span>
+            <button type="button" class="btn btn-light" @click="nextPage" :disabled="currentPage == lastPage">
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import { GoogleMap, Marker, MarkerCluster } from 'vue3-google-map';
+
 import axios from 'axios';
 import '../assets/theme.css';
 
@@ -61,11 +104,17 @@ export default {
       timeDate: '',
       spinner: false,
       // For Table
+      pageSize: 10,
+      currentPage: 1,
+      lastPage: '',
+      selectedLocations: [],
     };
   },
   computed: {
-    rows() {
-      return this.items.length;
+    displayLocation() {
+      let start = (this.currentPage - 1) * this.pageSize;
+      let end = this.currentPage * this.pageSize;
+      return this.locations.slice(start, end);
     },
   },
   methods: {
@@ -89,6 +138,7 @@ export default {
             }
             this.spinner = false;
             this.getTimeZone();
+            this.updatePageInfo();
           },
           // User Denied Geolocation
           (error) => {
@@ -121,18 +171,19 @@ export default {
           this.center = res.data.results[0].geometry.location;
           // If Search Location not exist, then push into Locations
           if (!this.locations.some((e) => e.address == this.searchInput)) {
-            console.log(this.searchInput + ' ' + this.center.lat + ' ' + this.center.lng);
+            // console.log(this.searchInput + ' ' + this.center.lat + ' ' + this.center.lng);
             this.locations.push({ address: this.searchInput, location: this.center });
           }
           this.getTimeZone();
-          console.log(JSON.stringify(this.locations));
+          this.updatePageInfo();
+          // console.log(JSON.stringify(this.locations));
         } else {
           //   console.log('Location not found.');
           this.errorMsg = 'Location not found';
         }
         this.spinner = false;
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         this.errorMsg = error;
         this.spinner = false;
       }
@@ -164,6 +215,22 @@ export default {
         // console.log(error);
         this.errorMsg = error;
       }
+    },
+    // For Location Table Method
+    nextPage() {
+      if (this.currentPage * this.pageSize < this.locations.length) this.currentPage++;
+    },
+    prevPage() {
+      if (this.currentPage > 1) this.currentPage--;
+    },
+    updatePageInfo() {
+      this.lastPage = Math.ceil(this.locations.length / this.pageSize);
+    },
+    deletedSelectedLocations() {
+      // console.log(JSON.stringify(this.selectedLocations));
+      this.locations = this.locations.filter((location) => !this.selectedLocations.includes(location.address));
+      this.selectedLocations = [];
+      this.updatePageInfo();
     },
   },
 };
