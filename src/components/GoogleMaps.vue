@@ -64,22 +64,33 @@ export default {
     currentLocation() {
       this.spinner = true;
       this.errorMsg = '';
-      //console.log(navigator.geolocation);
-      //   if (navigator.geolocation !== null) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        console.log(position.timeDate);
-        if (position) {
-          this.center = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          this.locations.push(this.center);
-          this.getTimeZone(position.timeDate / 1000);
-        } else {
-          this.errorMsg = 'Your browser does not allow access current location.';
-        }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            this.center = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+
+            // If Search Location not exist, then push into Locations
+            if (!this.locations.some((e) => e.lat == this.center.lat && e.lng == this.center.lng)) {
+              //   console.log(this.center.lat + ' ' + this.center.lng);
+              this.locations.push(this.center);
+            }
+            this.spinner = false;
+            this.getTimeZone();
+          },
+          (error) => {
+            this.errorMsg = 'Error: ' + error.message;
+            this.spinner = false;
+            // console.log(error.message);
+          }
+        );
+      } else {
         this.spinner = false;
-      });
+        console.log('Your browser does not support geolocation API ');
+      }
     },
 
     async searchLocation() {
@@ -93,13 +104,17 @@ export default {
           },
         });
 
-        const { results } = res.data;
+        // console.log('Search Location:' + JSON.stringify(res));
+        // console.log(res.data.results[0].geometry.location.lat);
 
         if (res.data.status == 'OK') {
-          this.center = results[0].geometry.location;
-          this.locations.push(this.center);
-          console.log('Search Address' + this.center);
-          this.getTimeZone(Date.now());
+          this.center = res.data.results[0].geometry.location;
+          // If Search Location not exist, then push into Locations
+          if (!this.locations.some((e) => e.lat == this.center.lat && e.lng == this.center.lng)) {
+            // console.log(this.center.lat + ' ' + this.center.lng);
+            this.locations.push(this.center);
+          }
+          this.getTimeZone();
         } else {
           //   console.log('Location not found.');
           this.errorMsg = 'Location not found';
@@ -111,12 +126,15 @@ export default {
         this.spinner = false;
       }
     },
-    async getTimeZone(time) {
+    // Get Time Zone by latitude and longitude
+    async getTimeZone() {
+      let timestamp = Date.now();
+
       try {
         const res = await axios.get(' https://maps.googleapis.com/maps/api/timezone/json', {
           params: {
             location: this.center.lat + ',' + this.center.lng,
-            timestamp: time,
+            timestamp: timestamp / 1000,
             key: this.$API_KEY,
           },
         });
@@ -124,15 +142,15 @@ export default {
         if (res.data.status == 'OK') {
           this.timeZone = res.data.timeZoneId;
           // console.log(res.data.timeZoneId);
-          let date = new Date(time * 1000);
-          console.log(date.toLocaleString('en-GB', { timeZone: this.timeZone }));
+          let date = new Date(timestamp);
+          //   console.log(date.toLocaleString('en-GB', { timeZone: this.timeZone }));
           this.timeDate = date.toLocaleString('en-GB', { timeZone: this.timeZone });
         } else {
           //   console.log('Location time zone not found.');
           this.errorMsg = 'Location time zone not found.';
         }
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         this.errorMsg = error;
       }
     },
