@@ -44,7 +44,6 @@
 
   <!-- Location Table -->
 
-  <!-- <div class="container mt-5" style="padding-top: 550px" v-show="locations.length > 0"> -->
   <div id="Table" v-show="locations.length > 0">
     <div class="row d-flex justify-content-center align-items-center">
       <table class="table table-striped">
@@ -67,6 +66,7 @@
           </tr>
         </tbody>
       </table>
+      <!-- Delete Button and Pagination -->
       <div class="container">
         <div class="row">
           <div class="col-sm">
@@ -74,9 +74,11 @@
           </div>
           <div class="col-sm"></div>
           <div class="col-sm" style="padding-left: 100px">
-            <button type="button" class="btn btn-light" @click="prevPage" :disabled="currentPage == 1">Previous</button>
+            <button type="button" class="btn btn-light btn-sm" @click="prevPage" :disabled="currentPage == 1">
+              Previous
+            </button>
             <span style="padding: 0 5px">{{ currentPage }} / {{ lastPage }}</span>
-            <button type="button" class="btn btn-light" @click="nextPage" :disabled="currentPage == lastPage">
+            <button type="button" class="btn btn-light btn-sm" @click="nextPage" :disabled="currentPage == lastPage">
               Next
             </button>
           </div>
@@ -134,7 +136,6 @@ export default {
             if (!this.locations.some((e) => e.address == 'Current Location')) {
               //console.log('Current Location ' + this.center.lat + ' ' + this.center.lng);
               this.locations.push({ address: 'Current Location', location: this.center });
-              console.log(JSON.stringify(this.locations));
             }
             this.spinner = false;
             this.getTimeZone();
@@ -156,6 +157,7 @@ export default {
     async searchLocation() {
       this.spinner = true;
       this.errorMsg = '';
+
       try {
         const res = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
           params: {
@@ -165,7 +167,6 @@ export default {
         });
 
         // console.log('Search Location:' + JSON.stringify(res));
-        // console.log(res.data.results[0].geometry.location.lat);
 
         if (res.data.status == 'OK') {
           this.center = res.data.results[0].geometry.location;
@@ -205,10 +206,8 @@ export default {
           this.timeZone = res.data.timeZoneId;
           // console.log(res.data.timeZoneId);
           let date = new Date(timestamp);
-          //   console.log(date.toLocaleString('en-GB', { timeZone: this.timeZone }));
           this.timeDate = date.toLocaleString('en-GB', { timeZone: this.timeZone });
         } else {
-          //   console.log('Location time zone not found.');
           this.errorMsg = 'Location time zone not found.';
         }
       } catch (error) {

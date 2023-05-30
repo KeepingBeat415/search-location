@@ -34,17 +34,17 @@ body {
 
 #Map {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  margin: auto;
+  top: 0px;
+  left: 80px;
+  right: 80px;
+  bottom: 600px;
 }
 
 #Table {
   margin: auto;
   padding-top: 600px;
   max-width: 1000px;
-  position: relative;
   z-index: 1;
 }
 
